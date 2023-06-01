@@ -18,7 +18,7 @@ from requests import HTTPError, Response
 from ..app.headers import AppHeaders, DeprecatedAppHeaders
 from ..celeryconf import app
 from ..core.utils import build_absolute_uri
-from ..permission.enums import get_permission_names
+from ..permission.enums import get_permissions_enum_dict
 from ..plugins.manager import PluginsManager
 from ..thumbnail import ICON_MIME_TYPES
 from ..thumbnail.utils import get_filename_from_url
@@ -193,8 +193,6 @@ def install_app(app_installation: AppInstallation, activate: bool = False):
     assigned_permissions = app_installation.permissions.all()
     manifest_data = response.json()
 
-    manifest_data["permissions"] = get_permission_names(assigned_permissions)
-
     manifest = ManifestStrict.parse_obj(manifest_data)
 
     app = App.objects.create(
@@ -216,7 +214,9 @@ def install_app(app_installation: AppInstallation, activate: bool = False):
         author=manifest.author,
     )
 
-    app.permissions.set(app_installation.permissions.all())
+    app.permissions.set(assigned_permissions)
+    permissions_dict = get_permissions_enum_dict()
+
     for extension_data in manifest.extensions:
         extension = AppExtension.objects.create(
             app=app,
@@ -225,7 +225,11 @@ def install_app(app_installation: AppInstallation, activate: bool = False):
             mount=extension_data.mount.name,
             target=extension_data.target.name,
         )
-        extension.permissions.set(extension_data.permissions)
+        codenames = [
+            permissions_dict[permission.value].codename
+            for permission in extension_data.permissions
+        ]
+        extension.permissions.set(assigned_permissions.filter(codename__in=codenames))
 
     webhooks = Webhook.objects.bulk_create(
         Webhook(

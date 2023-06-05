@@ -34,13 +34,18 @@ class AppFetchManifest(BaseMutation):
         return cls(manifest=instance, errors=[])
 
     @classmethod
-    def fetch_manifest(cls, manifest_url):
+    def fetch_manifest(cls, manifest_url) -> ManifestSchema:
         try:
             response = requests.get(
                 manifest_url, timeout=REQUEST_TIMEOUT, allow_redirects=False
             )
             response.raise_for_status()
-            return response.json()
+            manifest = ManifestSchema.parse_raw(
+                response.content, root_error_field="manifest_url"
+            )
+            return manifest
+        except ValidationError as error:
+            raise error
         except requests.Timeout:
             msg = "The request to fetch manifest data timed out."
             code = AppErrorCode.MANIFEST_URL_CANT_CONNECT.value
@@ -48,10 +53,6 @@ class AppFetchManifest(BaseMutation):
         except requests.HTTPError:
             msg = "Unable to fetch manifest data."
             code = AppErrorCode.MANIFEST_URL_CANT_CONNECT.value
-            raise ValidationError({"manifest_url": ValidationError(msg, code=code)})
-        except ValueError:
-            msg = "Incorrect structure of manifest."
-            code = AppErrorCode.INVALID_MANIFEST_FORMAT.value
             raise ValidationError({"manifest_url": ValidationError(msg, code=code)})
         except Exception:
             msg = "Can't fetch manifest data. Please try later."
@@ -81,15 +82,10 @@ class AppFetchManifest(BaseMutation):
         )
 
     @classmethod
-    def clean_manifest_data(cls, info, manifest_data) -> ManifestSchema:
-        return ManifestSchema.parse_obj(manifest_data)
-
-    @classmethod
     def perform_mutation(cls, _root, info, /, **data):
         manifest_url = data.get("manifest_url")
         clean_manifest_url(manifest_url)
         manifest_data = cls.fetch_manifest(manifest_url)
-        manifest_data = cls.clean_manifest_data(info, manifest_data)
 
         instance = cls.construct_instance(instance=None, cleaned_data=manifest_data)
         return cls.success_response(instance)

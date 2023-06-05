@@ -191,9 +191,7 @@ def install_app(app_installation: AppInstallation, activate: bool = False):
     )
     response.raise_for_status()
     assigned_permissions = app_installation.permissions.all()
-    manifest_data = response.json()
-
-    manifest = ManifestStrict.parse_obj(manifest_data)
+    manifest = ManifestStrict.parse_raw(response.content)
 
     app = App.objects.create(
         name=app_installation.app_name,

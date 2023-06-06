@@ -3,7 +3,7 @@ import requests
 from django.core.exceptions import ValidationError
 
 from ....app.error_codes import AppErrorCode
-from ....app.installation_utils import REQUEST_TIMEOUT, fetch_brand_data
+from ....app.installation_utils import REQUEST_TIMEOUT
 from ....app.manifest_schema import Manifest as ManifestSchema
 from ....app.manifest_validations import clean_manifest_url
 from ....permission.enums import AppPermission
@@ -11,8 +11,6 @@ from ...core.doc_category import DOC_CATEGORY_APPS
 from ...core.mutations import BaseMutation
 from ...core.types import AppError
 from ..types import Manifest
-
-FETCH_BRAND_DATA_TIMEOUT = 5
 
 
 class AppFetchManifest(BaseMutation):
@@ -79,6 +77,7 @@ class AppFetchManifest(BaseMutation):
             audience=cleaned_data.audience,
             required_saleor_version=cleaned_data.required_saleor_version,
             author=cleaned_data.author,
+            brand=cleaned_data.brand,
         )
 
     @classmethod

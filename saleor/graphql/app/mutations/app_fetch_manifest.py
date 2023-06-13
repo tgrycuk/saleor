@@ -39,7 +39,7 @@ class AppFetchManifest(BaseMutation):
             )
             response.raise_for_status()
             manifest = ManifestSchema.parse_raw(
-                response.content, root_error_field="manifest_url"
+                response.content, field_name="manifest_url"
             )
             return manifest
         except ValidationError as error:

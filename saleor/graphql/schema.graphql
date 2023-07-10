@@ -7223,6 +7223,20 @@ input AddressInput {
   Phone numbers are validated with Google's [libphonenumber](https://github.com/google/libphonenumber) library.
   """
   phone: String
+
+  """Checkout public metadata."""
+  metadata: [MetadataInput!]
+
+  """Checkout private metadata."""
+  privateMetadata: [MetadataInput!]
+}
+
+input MetadataInput {
+  """Key of a metadata item."""
+  key: String!
+
+  """Value of a metadata item."""
+  value: String!
 }
 
 """Represents a custom attribute."""
@@ -19077,14 +19091,6 @@ input ShopSettingsInput {
   DEPRECATED: this field will be removed in Saleor 4.0. To enable taxes for a shipping method, assign a tax class to the shipping method with `shippingPriceCreate` or `shippingPriceUpdate` mutations.
   """
   chargeTaxesOnShipping: Boolean
-}
-
-input MetadataInput {
-  """Key of a metadata item."""
-  key: String!
-
-  """Value of a metadata item."""
-  value: String!
 }
 
 """

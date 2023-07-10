@@ -250,6 +250,30 @@ class Checkout(models.Model):
             self.set_country(country_code, commit=True)
         return country_code
 
+    def set_metadata_from_shipping_address(self, shipping_address):
+        from ..graphql.meta.mutations.utils import save_instance
+        from ..graphql.meta.types import get_valid_metadata_instance
+
+        fields_to_update = []
+        metadata = shipping_address.get("metadata")
+        private_metadata = shipping_address.get("private_metadata")
+        meta_instance = get_valid_metadata_instance(self)
+        metadata = {data.key: data.value for data in metadata} if metadata else None
+        private_metadata = (
+            {data.key: data.value for data in private_metadata}
+            if private_metadata
+            else None
+        )
+
+        if metadata:
+            meta_instance.store_value_in_metadata(items=metadata)
+            fields_to_update.append("metadata")
+        if private_metadata:
+            meta_instance.store_value_in_private_metadata(items=private_metadata)
+            fields_to_update.append("private_metadata")
+        if fields_to_update:
+            save_instance(meta_instance, fields_to_update)
+
 
 class CheckoutLine(ModelWithMetadata):
     """A single checkout line.

@@ -17,6 +17,7 @@ from .....plugins.base_plugin import ExcludedShippingMethod
 from .....plugins.manager import get_plugins_manager
 from .....warehouse.models import Reservation, Stock
 from ....core.utils import to_global_id_or_none
+from ....meta.types import get_valid_metadata_instance
 from ....tests.utils import get_graphql_content
 from ...mutations.utils import update_checkout_shipping_method_if_invalid
 
@@ -58,7 +59,7 @@ MUTATION_CHECKOUT_SHIPPING_ADDRESS_UPDATE = """
     "invalidate_checkout_prices",
     wraps=invalidate_checkout_prices,
 )
-def test_checkout_shipping_address_update(
+def test_checkout_shipping_address_with_metadata_update(
     mocked_invalidate_checkout_prices,
     mocked_update_shipping_method,
     user_api_client,
@@ -70,6 +71,8 @@ def test_checkout_shipping_address_update(
     previous_last_change = checkout.last_change
 
     shipping_address = graphql_address_data
+    shipping_address["metadata"] = [{"key": "public", "value": "public_value"}]
+    shipping_address["privateMetadata"] = [{"key": "private", "value": "private_value"}]
     variables = {
         "id": to_global_id_or_none(checkout_with_item),
         "shippingAddress": shipping_address,
@@ -82,6 +85,11 @@ def test_checkout_shipping_address_update(
     data = content["data"]["checkoutShippingAddressUpdate"]
     assert not data["errors"]
     checkout.refresh_from_db()
+    meta_instance = get_valid_metadata_instance(checkout)
+
+    assert meta_instance.metadata == {"public": "public_value"}
+    assert meta_instance.private_metadata == {"private": "private_value"}
+
     assert checkout.shipping_address is not None
     assert checkout.shipping_address.first_name == shipping_address["firstName"]
     assert checkout.shipping_address.last_name == shipping_address["lastName"]

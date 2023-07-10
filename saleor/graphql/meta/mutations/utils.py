@@ -1,11 +1,13 @@
+from typing import Union
+
 from django.core.exceptions import FieldDoesNotExist, ValidationError
 from django.db import DatabaseError
 
 from ....core.error_codes import MetadataErrorCode
 
 
-def save_instance(instance, metadata_field: str):
-    fields = [metadata_field]
+def save_instance(instance, metadata_field: Union[str, list[str]]):
+    fields = [metadata_field] if isinstance(metadata_field, str) else metadata_field
 
     try:
         if bool(instance._meta.get_field("updated_at")):

@@ -165,6 +165,7 @@ class CheckoutShippingAddressUpdate(BaseMutation, I18nMixin):
 
         country = shipping_address_instance.country.code
         checkout.set_country(country, commit=True)
+        checkout.set_metadata_from_shipping_address(shipping_address)
 
         # Resolve and process the lines, validating variants quantities
         if lines:

@@ -38,6 +38,8 @@ def test_create_address_mutation(
     # given
     query = ADDRESS_CREATE_MUTATION
     graphql_address_data["city"] = "Dummy"
+    graphql_address_data["metadata"] = [{"key": "key", "value": "public"}]
+    graphql_address_data["privateMetadata"] = [{"key": "key", "value": "private"}]
     user_id = graphene.Node.to_global_id("User", customer_user.id)
     variables = {"user": user_id, "address": graphql_address_data}
     # when

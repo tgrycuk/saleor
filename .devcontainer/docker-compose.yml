@@ -41,6 +41,8 @@ services:
     restart: unless-stopped
     ports:
       - 9000:80
+    expose:
+      - 80
 
   db:
     image: library/postgres:13-alpine

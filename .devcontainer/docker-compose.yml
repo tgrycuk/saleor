@@ -1,6 +1,25 @@
 version: "3.4"
 
 services:
+  nginx:
+    image: nginx:1.25.1-alpine
+    restart: unless-stopped
+    environment:
+      VIRTUAL_HOST: pinkshop.tomodev.pl
+      VIRTUAL_PORT: 80
+#    ports:
+#      - 80:80
+    expose:
+      - 80
+    volumes:
+      - './docker/nginx:/etc/nginx/conf.d'
+    depends_on:
+      - saleor
+      - dashboard
+    networks:
+      - default
+      - nginx-proxy
+
   saleor:
     image: saleor
     build:
@@ -62,3 +81,7 @@ volumes:
     driver: local
   saleor-redis:
     driver: local
+
+networks:
+  nginx-proxy:
+    external: true

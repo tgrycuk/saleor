@@ -8301,7 +8301,7 @@
       "menu": 2,
       "name": "GraphQL API",
       "parent": 220,
-      "url": "http://localhost:8000/graphql/",
+      "url": "http://pinkshop.tomodev.pl:8000/graphql/",
       "category": null,
       "collection": null,
       "page": null,
